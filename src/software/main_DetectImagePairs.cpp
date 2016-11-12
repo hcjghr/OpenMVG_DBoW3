@@ -177,7 +177,7 @@ int main(int argc, char **argv)
       {
         similarity_File << i << ";" << r_i << ";"<<ret[r_i].Score<<"\n";
 
-        if ( r_i == ret[r_i].Id )
+        if ( i == ret[r_i].Id )
           continue;
 
         // If match is already in video mode we skip it

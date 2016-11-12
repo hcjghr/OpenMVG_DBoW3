@@ -38,11 +38,14 @@ int main(int argc, char **argv)
   const DBoW3::WeightingType weight = DBoW3::TF_IDF;
   const DBoW3::ScoringType score = DBoW3::L1_NORM;
 
+  int iUseEveryXImage = 5;
+
   cmd.add( make_option('i', sSfM_Data_Filename, "input_file") );
   cmd.add( make_option('o', sMatchesDirectory, "out_dir") );
   cmd.add( make_option('v', sVocabulary_Filename, "vocab_file") );
   cmd.add( make_option('k', vocabulary_k, "vocab_k") );
   cmd.add( make_option('l', vocabulary_k, "vocab_L") );
+  cmd.add( make_option('x', iUseEveryXImage, "every_x_image") );
 
   try {
       if (argc == 1) throw std::string("Invalid command line parameter.");
@@ -103,13 +106,18 @@ int main(int argc, char **argv)
   image_features_opencv.resize(sfm_views.size());
 
   IndexT c_view_id = 0;
+  int skip_v_i = 0;
   for (Views::iterator it_view = sfm_views.begin(); it_view!=sfm_views.end(); ++it_view)
   {
-    IndexT view_id = it_view->second->id_view;
-    // Get region
-    const features::Regions & regions = *regions_provider->regions_per_view.at(view_id).get();
-    convertRegionsToOpenCV(regions,image_features_opencv[c_view_id]);
-
+    if (skip_v_i == 0)
+    {
+      IndexT view_id = it_view->second->id_view;
+      // Get region
+      const features::Regions & regions = *regions_provider->regions_per_view.at(view_id).get();
+      convertRegionsToOpenCV(regions,image_features_opencv[c_view_id]);
+      skip_v_i = iUseEveryXImage;
+    }
+    skip_v_i-=1;
     ++c_view_id;
     ++my_progress_bar;
   }

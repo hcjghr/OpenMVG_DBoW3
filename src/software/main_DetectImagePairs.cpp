@@ -173,9 +173,12 @@ int main(int argc, char **argv)
       // database. ret[1] is the second best match.
       db.query(image_features_opencv[i], ret, n_max_results);
       // Check if views are similar enough
-      for (size_t r_i = 1; r_i < ret.size(); r_i++)
+      for (size_t r_i = 0; r_i < ret.size(); r_i++)
       {
         similarity_File << i << ";" << r_i << ";"<<ret[r_i].Score<<"\n";
+
+        if ( r_i == i )
+          continue;
 
         // If match is already in video mode we skip it
         if (iMatchingVideoMode>0 && (ret[r_i].Id > i && ret[r_i].Id < i+1+iMatchingVideoMode))

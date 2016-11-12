@@ -175,7 +175,7 @@ int main(int argc, char **argv)
       // Check if views are similar enough
       for (size_t r_i = 0; r_i < ret.size(); r_i++)
       {
-        similarity_File << i << ";" << r_i << ";"<<ret[r_i].Score<<"\n";
+        similarity_File << i << ";" << ret[r_i].Id << ";"<<ret[r_i].Score<<"\n";
 
         if ( i == ret[r_i].Id )
           continue;

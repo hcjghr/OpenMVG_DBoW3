@@ -155,13 +155,12 @@ int main(int argc, char **argv)
   std::vector<std::vector<size_t> > vec_found_pairs;
   vec_found_pairs.resize(image_features_opencv.size());
 
-  DBoW3::QueryResults ret;
   C_Progress_display my_progress_bar_query( image_features_opencv.size(),
     std::cout, "\n- Querying the database -\n" );
 
   const unsigned int nb_max_thread = omp_get_max_threads();
   omp_set_num_threads(nb_max_thread);
-  #pragma omp parallel for schedule(dynamic)
+  #pragma omp parallel for schedule(dynamic) 
   for(size_t i = 0; i < image_features_opencv.size(); ++i)
   {
       bPairFound = false;
@@ -183,6 +182,7 @@ int main(int argc, char **argv)
       // Find closest views
       // ret[0] is always the same image in this case, because we added it to the
       // database. ret[1] is the second best match.
+      DBoW3::QueryResults ret;
       db.query(image_features_opencv[i], ret, n_max_results);
       // Check if views are similar enough
       for (size_t r_i = 0; r_i < ret.size(); r_i++)

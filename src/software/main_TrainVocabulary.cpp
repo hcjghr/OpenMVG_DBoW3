@@ -44,7 +44,7 @@ int main(int argc, char **argv)
   cmd.add( make_option('o', sMatchesDirectory, "out_dir") );
   cmd.add( make_option('v', sVocabulary_Filename, "vocab_file") );
   cmd.add( make_option('k', vocabulary_k, "vocab_k") );
-  cmd.add( make_option('l', vocabulary_k, "vocab_L") );
+  cmd.add( make_option('l', vocabulary_L, "vocab_L") );
   cmd.add( make_option('x', iUseEveryXImage, "every_x_image") );
 
   try {
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
       << "[-o|--out_dir path] output path where computed are stored\n"
       << "[-v|--vocal_file path] output path where vocabulary wil be stored (path+name)\n"
       << "\t\t (default: out_dir/vocabulary.bin\n"
-      << "[-k|--vocab_k path] vocabulary construction k (default: 3)\n"
+      << "[-k|--vocab_k path] vocabulary construction k (default: 9)\n"
       << "[-l|--vocab_L path] vocabulary construction L (default: 3)\n"
       << std::endl;
 

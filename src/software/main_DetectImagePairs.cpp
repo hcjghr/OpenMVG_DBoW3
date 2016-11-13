@@ -20,6 +20,8 @@
 
 #include "../util/data_conversion.hpp"
 
+#include <omp.h>
+
 using namespace openMVG;
 using namespace openMVG::sfm;
 using namespace std;
@@ -37,6 +39,8 @@ int main(int argc, char **argv)
   int iMatchingVideoMode = -1;
   IndexT n_max_results = -1;
   float min_query_threshold = 0.8f;
+
+  int iNumThreads = 0;
 
   cmd.add( make_option('i', sSfM_Data_Filename, "input_file") );
   cmd.add( make_option('d', sVocabulary_Filename, "vocab_file") );
@@ -148,21 +152,29 @@ int main(int argc, char **argv)
   // Flat to determine if we have to export current view id (not if no pairs are found)
   bool bPairFound = false;
 
+  std::vector<std::vector<size_t> > vec_found_pairs;
+  vec_found_pairs.resize(image_features_opencv.size());
+
   DBoW3::QueryResults ret;
   C_Progress_display my_progress_bar_query( image_features_opencv.size(),
     std::cout, "\n- Querying the database -\n" );
-  for(size_t i = 0; i < image_features_opencv.size(); ++i, ++my_progress_bar_query)
+
+  const unsigned int nb_max_thread = omp_get_max_threads();
+  omp_set_num_threads(nb_max_thread);
+  #pragma omp parallel for schedule(dynamic)
+  for(size_t i = 0; i < image_features_opencv.size(); ++i)
   {
       bPairFound = false;
       // Add video mode pairs
       if (iMatchingVideoMode>0)
       {
         // Add current view id
-        pairs_File << i;
+        //pairs_File << i;
         // Add all overlapping views
         for (IndexT I = i+1; I < i+1+iMatchingVideoMode && I < sfm_views.size(); ++I)
         {
-          pairs_File << " " << I;
+          vec_found_pairs[i].emplace_back(I);
+          //pairs_File << " " << I;
         }
         // Mark that we added at least one pair (so we dont add initial again)
         bPairFound = true;
@@ -175,7 +187,7 @@ int main(int argc, char **argv)
       // Check if views are similar enough
       for (size_t r_i = 0; r_i < ret.size(); r_i++)
       {
-        similarity_File << i << ";" << ret[r_i].Id << ";"<<ret[r_i].Score<<"\n";
+        //similarity_File << i << ";" << ret[r_i].Id << ";"<<ret[r_i].Score<<"\n";
 
         if ( i == ret[r_i].Id )
           continue;
@@ -187,22 +199,39 @@ int main(int argc, char **argv)
         if (ret[r_i].Score > min_query_threshold)
         {
           // We add index of initial image with first pair found
-          if (!bPairFound)
+          /*if (!bPairFound)
           {
             pairs_File << i;
             bPairFound = true;
           }
-          pairs_File << " " << ret[r_i].Id;
+          pairs_File << " " << ret[r_i].Id;*/
+          vec_found_pairs[i].emplace_back(ret[r_i].Id);
         }
         else
         {
           break;
         }
       }
-      if (bPairFound)
+      /*if (bPairFound)
       {
         pairs_File << std::endl;
+      }*/
+#pragma omp critical
+    ++my_progress_bar_query;
+  }
+
+  for (size_t p_i = 0; p_i < vec_found_pairs.size(); p_i++)
+  {
+    if ( vec_found_pairs[p_i].size() > 0)
+    {
+      pairs_File << p_i;
+      for (size_t pp_i = 0; pp_i < vec_found_pairs[p_i].size(); pp_i++)
+      {
+        pairs_File << " " << vec_found_pairs[p_i][pp_i];
       }
+      pairs_File << std::endl;
+    }
+    
   }
 
 

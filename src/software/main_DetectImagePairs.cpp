@@ -194,6 +194,10 @@ int main(int argc, char **argv)
           }
           pairs_File << " " << ret[r_i].Id;
         }
+        else
+        {
+          break;
+        }
       }
       if (bPairFound)
       {
